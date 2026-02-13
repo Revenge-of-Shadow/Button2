@@ -17,40 +17,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" >
 
-        <TableRow>
-            <Button
-                android:layout_width="0dp"
-                android:layout_weight=".5"
-                android:id="@+id/btAdd"
-                android:text="+"
-                />
-            <Button
-                android:layout_width="0dp"
-                android:layout_weight=".5"
-                android:id="@+id/btStopAll"
-                android:text="◼"
-                />
-        </TableRow>
-
-        <TableRow>
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight=".55"
-                />
-            <Button
-                android:layout_width="0dp"
-                android:layout_weight=".15"
-                android:text="⏯️"/>
-            <Button
-                android:layout_width="0dp"
-                android:layout_weight=".15"
-                android:text="🗘"/>
-            <Button
-                android:layout_width="0dp"
-                android:layout_weight=".15"
-                android:text="🗑"/>
-        </TableRow>
-
     </TableLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

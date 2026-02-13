@@ -43,9 +43,16 @@ public class SoundFileDbHelper extends SQLiteOpenHelper {
         vals.put(COLUMN_NAME_ENTRY, val);
         return wdb.insert(TABLE_NAME, null, vals);
     }
-    public String get(int sought_id){
+    public void remove(int id){
+        SQLiteDatabase wdb = getWritableDatabase();
+        Cursor cursor = wdb.rawQuery("SELECT "+BaseColumns._ID+" FROM "+TABLE_NAME, null);
+        if(cursor.move(id+1)){
+            wdb.delete(TABLE_NAME, BaseColumns._ID+"=?", new String[]{cursor.getString(0)}) ;
+        }
+    }
+    public String get(int id){
         SQLiteDatabase rdb = getReadableDatabase();
         Cursor cursor = rdb.rawQuery("SELECT "+COLUMN_NAME_ENTRY+" FROM "+TABLE_NAME, null);
-        return cursor.move(sought_id+1)? cursor.getString(0) : "";
+        return cursor.move(id+1)? cursor.getString(0) : "";
     }
 }
