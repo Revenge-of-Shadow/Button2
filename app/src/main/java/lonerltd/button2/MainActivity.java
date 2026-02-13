@@ -1,5 +1,6 @@
 package lonerltd.button2;
 
+import android.app.ActionBar;
 import android.app.ComponentCaller;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -7,7 +8,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -23,12 +26,30 @@ import androidx.core.view.WindowInsetsCompat;
 public class MainActivity extends AppCompatActivity {
     private SoundFileDbHelper helper;
     void refreshRows(){
+        TableRow.LayoutParams half_params = new TableRow.LayoutParams(
+                TableRow.LayoutParams.WRAP_CONTENT,
+                TableRow.LayoutParams.WRAP_CONTENT,
+                0.50f
+        );
+        TableRow.LayoutParams bigger_params = new TableRow.LayoutParams(
+                TableRow.LayoutParams.WRAP_CONTENT,
+                TableRow.LayoutParams.WRAP_CONTENT,
+                0.55f
+        );
+        TableRow.LayoutParams smaller_params = new TableRow.LayoutParams(
+                TableRow.LayoutParams.WRAP_CONTENT,
+                TableRow.LayoutParams.WRAP_CONTENT,
+                0.15f
+        );
+
         TableLayout table = (TableLayout) findViewById(R.id.table);
         table.removeAllViews();
 
         TableRow firstRow = new TableRow(getApplicationContext());
+
         Button add = new Button(getApplicationContext());
         add.setText("+");
+        add.setLayoutParams(half_params);
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -40,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         });
         Button stopAll = new Button(getApplicationContext());
         stopAll.setText("◼");
+        stopAll.setLayoutParams(half_params);
         stopAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -71,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             });
 
             Button loop = new Button(getApplicationContext());
-            loop.setText("\uD83D\uDDD8");
+            loop.setText("\uD83D\uDD03");
             loop.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -87,6 +109,12 @@ public class MainActivity extends AppCompatActivity {
                     refreshRows();
                 }
             });
+
+
+            title.setLayoutParams(bigger_params);
+            play.setLayoutParams(smaller_params);
+            loop.setLayoutParams(smaller_params);
+            rem.setLayoutParams(smaller_params);
 
             row.addView(title);
             row.addView(play);
