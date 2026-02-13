@@ -1,6 +1,8 @@
 package lonerltd.button2;
 
+import android.app.ComponentCaller;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.provider.BaseColumns;
@@ -11,6 +13,8 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -28,7 +32,10 @@ public class MainActivity extends AppCompatActivity {
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent intent = new Intent()
+                        .setType("*/*")
+                        .setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select a sound file."), 748);
             }
         });
         Button stopAll = new Button(getApplicationContext());
@@ -103,14 +110,21 @@ public class MainActivity extends AppCompatActivity {
         });
 
         helper = new SoundFileDbHelper(getApplicationContext());
-        //helper.add("test");
         refreshRows();
-
     }
 
     @Override
     protected void onDestroy() {
         helper.close();
         super.onDestroy();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 748 && resultCode == RESULT_OK) {
+            helper.add(data.getDataString());
+            refreshRows();
+        }
     }
 }
