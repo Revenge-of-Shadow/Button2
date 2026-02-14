@@ -1,39 +1,29 @@
 package lonerltd.button2;
 
 import android.Manifest;
-import android.app.ActionBar;
-import android.app.ComponentCaller;
-import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
+import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.BaseColumns;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import java.util.ArrayList;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
     private final int PERMISSION_REQUEST_CODE = 104;
@@ -70,7 +60,43 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    ArrayList<MediaPlayer> players;
+    MediaPlayer[] players;
+    int nextPlayer = 0;
+    private void addPlayer(Uri uri, boolean looping){
+        if(players[nextPlayer] != null){
+            players[nextPlayer].stop();
+            players[nextPlayer].release();
+        }
+        try {
+            players[nextPlayer] = new MediaPlayer();
+            players[nextPlayer].setDataSource(getApplicationContext(), uri);
+            players[nextPlayer].setLooping(looping);
+            players[nextPlayer].setAudioAttributes(new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .build());
+            players[nextPlayer].prepareAsync();
+
+            players[nextPlayer].setOnErrorListener((mp, what, extra) -> {
+                Log.e("DEBUG", "MediaPlayer error: what=" + what + " extra=" + extra);
+                return true;
+            });
+            players[nextPlayer].setOnPreparedListener(mp -> {
+                Log.d("DEBUG", "MediaPlayer starting");
+                mp.start();
+            });
+        } catch (IOException e) {
+            players[nextPlayer].release();
+        }
+
+        if (nextPlayer == players.length - 1) {
+            nextPlayer = 0;
+        } else {
+            ++nextPlayer;
+        }
+    }
+
+
     private SoundFileDbHelper helper;
     void refreshRows(){
         TableRow.LayoutParams half_params = new TableRow.LayoutParams(
@@ -113,7 +139,11 @@ public class MainActivity extends AppCompatActivity {
         stopAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                for(int i = 0; i < players.length; ++i){
+                    if(players[i]!=null){
+                        players[i].stop();
+                    }
+                }
             }
         });
         firstRow.addView(add);
@@ -137,9 +167,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     Uri uri = AudioUriResolver.toPlaybackUri(helper.get(finalI));
-                    MediaPlayer p = MediaPlayer.create(getApplicationContext(), uri);
-                    p.setLooping(false);
-                    p.start();
+                    addPlayer(uri, false);
                 }
             });
 
@@ -148,6 +176,8 @@ public class MainActivity extends AppCompatActivity {
             loop.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    Uri uri = AudioUriResolver.toPlaybackUri(helper.get(finalI));
+                    addPlayer(uri, true);
                 }
             });
 
@@ -177,6 +207,10 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -190,6 +224,7 @@ public class MainActivity extends AppCompatActivity {
 
         helper = new SoundFileDbHelper(getApplicationContext());
         refreshRows();
+        players = new MediaPlayer[16];
     }
 
     @Override
