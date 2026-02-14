@@ -1,12 +1,21 @@
 package lonerltd.button2;
 
+import android.Manifest;
 import android.app.ActionBar;
 import android.app.ComponentCaller;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.BaseColumns;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -14,6 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -23,7 +33,44 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
+    private final int PERMISSION_REQUEST_CODE = 104;
+    private void requestAudioPermissionThenPick() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android 13+
+            if (checkSelfPermission(Manifest.permission.READ_MEDIA_AUDIO)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(
+                        new String[]{Manifest.permission.READ_MEDIA_AUDIO},
+                        PERMISSION_REQUEST_CODE
+                );
+                return;
+            }
+        } else {
+            // Android 12 and below
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        PERMISSION_REQUEST_CODE
+                );
+                return;
+            }
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+        super.onRequestPermissionsResult(requestCode, permissions, results);
+        if (requestCode == PERMISSION_REQUEST_CODE
+                && results.length > 0
+                && results[0] == PackageManager.PERMISSION_GRANTED) {
+        }
+    }
+
+
+    ArrayList<MediaPlayer> players;
     private SoundFileDbHelper helper;
     void refreshRows(){
         TableRow.LayoutParams half_params = new TableRow.LayoutParams(
@@ -53,10 +100,11 @@ public class MainActivity extends AppCompatActivity {
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent()
-                        .setType("*/*")
-                        .setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select a sound file."), 748);
+                requestAudioPermissionThenPick();
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("audio/*");
+                startActivityForResult(intent, 748);
             }
         });
         Button stopAll = new Button(getApplicationContext());
@@ -88,7 +136,10 @@ public class MainActivity extends AppCompatActivity {
             play.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    Uri uri = AudioUriResolver.toPlaybackUri(helper.get(finalI));
+                    MediaPlayer p = MediaPlayer.create(getApplicationContext(), uri);
+                    p.setLooping(false);
+                    p.start();
                 }
             });
 
@@ -151,7 +202,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 748 && resultCode == RESULT_OK) {
-            helper.add(data.getDataString());
+            Uri raw = data.getData();
+            String toStore = AudioUriResolver.resolve(getApplicationContext(), raw);
+            if(toStore!=null){
+                helper.add(toStore);
+            } else{
+                Toast.makeText(getApplicationContext(), "Could not read file.", Toast.LENGTH_SHORT).show();
+            }
             refreshRows();
         }
     }

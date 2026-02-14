@@ -1,6 +1,6 @@
 package lonerltd.button2;
 
-import static lonerltd.button2.SoundFile.FileEntry.COLUMN_NAME_ENTRY;
+import static lonerltd.button2.SoundFile.FileEntry.COLUMN_NAME_PATH;
 import static lonerltd.button2.SoundFile.FileEntry.TABLE_NAME;
 
 import android.content.ContentValues;
@@ -17,7 +17,7 @@ public class SoundFileDbHelper extends SQLiteOpenHelper {
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "SoundFile.db";
     private static final String SQL_CREATE_ENTRIES = "CREATE TABLE " + TABLE_NAME
-            + "(" + SoundFile.FileEntry._ID + " INTEGER PRIMARY KEY, " + COLUMN_NAME_ENTRY + " TEXT)";
+            + "(" + SoundFile.FileEntry._ID + " INTEGER PRIMARY KEY, " + COLUMN_NAME_PATH + " TEXT)";
     private static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + TABLE_NAME;
     public SoundFileDbHelper(Context c){
         super(c, DATABASE_NAME, null, DATABASE_VERSION);
@@ -37,10 +37,10 @@ public class SoundFileDbHelper extends SQLiteOpenHelper {
         return (int) DatabaseUtils.queryNumEntries(getReadableDatabase(), TABLE_NAME);
     }
 
-    public long add(String val){
+    public long add(String path){
         SQLiteDatabase wdb = getWritableDatabase();
         ContentValues vals = new ContentValues();
-        vals.put(COLUMN_NAME_ENTRY, val);
+        vals.put(COLUMN_NAME_PATH, path);
         return wdb.insert(TABLE_NAME, null, vals);
     }
     public void remove(int id){
@@ -52,7 +52,7 @@ public class SoundFileDbHelper extends SQLiteOpenHelper {
     }
     public String get(int id){
         SQLiteDatabase rdb = getReadableDatabase();
-        Cursor cursor = rdb.rawQuery("SELECT "+COLUMN_NAME_ENTRY+" FROM "+TABLE_NAME, null);
+        Cursor cursor = rdb.rawQuery("SELECT "+COLUMN_NAME_PATH+" FROM "+TABLE_NAME, null);
         return cursor.move(id+1)? cursor.getString(0) : "";
     }
 }
