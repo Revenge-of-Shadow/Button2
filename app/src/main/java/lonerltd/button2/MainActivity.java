@@ -118,38 +118,6 @@ public class MainActivity extends AppCompatActivity {
         TableLayout table = (TableLayout) findViewById(R.id.table);
         table.removeAllViews();
 
-        TableRow firstRow = new TableRow(getApplicationContext());
-
-        Button add = new Button(getApplicationContext());
-        add.setText("+");
-        add.setLayoutParams(half_params);
-        add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                requestAudioPermissionThenPick();
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("audio/*");
-                startActivityForResult(intent, 748);
-            }
-        });
-        Button stopAll = new Button(getApplicationContext());
-        stopAll.setText("◼");
-        stopAll.setLayoutParams(half_params);
-        stopAll.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                for(int i = 0; i < players.length; ++i){
-                    if(players[i]!=null){
-                        players[i].stop();
-                    }
-                }
-            }
-        });
-        firstRow.addView(add);
-        firstRow.addView(stopAll);
-        table.addView(firstRow);
-
         for (int i = 0; i < helper.numberOfRows(); ++i) {
             int finalI = i;
 
@@ -225,6 +193,37 @@ public class MainActivity extends AppCompatActivity {
         helper = new SoundFileDbHelper(getApplicationContext());
         refreshRows();
         players = new MediaPlayer[16];
+
+        //        Button add = new Button(getApplicationContext());
+//        add.setText("+");
+//        add.setLayoutParams(half_params);
+        (findViewById(R.id.btAdd)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestAudioPermissionThenPick();
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("audio/*");
+                startActivityForResult(intent, 748);
+            }
+        });
+//        Button stopAll = new Button(getApplicationContext());
+//        stopAll.setText("◼");
+//        stopAll.setLayoutParams(half_params);
+        (findViewById(R.id.btStopAll)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                for(int i = 0; i < players.length; ++i){
+                    if(players[i]!=null){
+                        players[i].stop();
+                    }
+                }
+            }
+        });
+//        firstRow.addView(add);
+//        firstRow.addView(stopAll);
+//        table.addView(firstRow);
+
     }
 
     @Override
